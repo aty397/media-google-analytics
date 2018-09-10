@@ -85,12 +85,34 @@ def get_results_pv(service, profile_id,input_filter,pubdate,enddate):
             ).execute()
     return result.get('rows')[0][1]
 
-def get_results_pv_hour(pubdate):
+def get_results_pv_hour(service, profile_id,path,pubdate,fout):
     #時間ごとのPVを取得する
     #pubdate=日付型：%Y-%m-%d-%H
-    #filter example:ga:pagePath==/archives/18575;ga:dateHour==2018050812
+    #filter example:ga:pagePath==/archives/18575;ga:dateHour==2018050820
+   
+    enddate = pubdate + datetime.timedelta(days=1) #クエリが日付をまたぐ可能性があるので+１日
+    enddate = enddate.strftime("%Y-%m-%d") #テキストに戻す
+    start_date = pubdate.strftime("%Y-%m-%d") #pubdateをテキストに戻す
+    sum_pv=0 #pv合計値
+    for i in range(16):
+        hour = pubdate + datetime.timedelta(hours=i)
+        hour = hour.strftime("%Y%m%d%H")
+        filter = 'ga:pagePath=='+path+';ga:dateHour=='+hour
+        pv = get_results_pv(service, profile_id,filter,start_date,enddate)
+        sum_pv+=int(pv)
+        if i==1:
+            fout.write(str(sum_pv)+',')
+        if i==3:
+            fout.write(str(sum_pv)+',')
+        if i==7:
+            fout.write(str(sum_pv)+',')
+        if i==11:
+            fout.write(str(sum_pv)+',')  
+        if i==15:
+            fout.write(str(sum_pv)+',')
+        if i==19:
+            fout.write(str(sum_pv)+',')
 
-    return 0
 
 def print_results(results):
     # Print data nicely for the user.
@@ -101,8 +123,6 @@ def print_results(results):
     # print ".get=",results.get('rows')
     # return
     if results:
-        # print 'View (Profile):', results.get('profileInfo').get('profileName')
-        # print 'len=',results.get('rows')
         #postが存在したかチェック
         if results.get('rows') is None:
             print 'Post does not exist.'
@@ -130,6 +150,11 @@ def main():
     fout = open('output/bijin.csv',mode='w')
     #記事パス,1日PV、1週PV、1月PV、公開日、記事タイトル
     fout.write('記事パス'+',')
+    fout.write('PV(2h)'+',')
+    fout.write('PV(4h)'+',')
+    fout.write('PV(8h)'+',')
+    fout.write('PV(12h)'+',')
+    fout.write('PV(16h)'+',')
     fout.write('PV(1日)'+',')
     fout.write('PV(７日)'+',')
     fout.write('PV(30日)'+',')
@@ -138,8 +163,8 @@ def main():
     fout.write('\n')
 
     #CSVからpostidと公開日時を取得する
-    f = open('input/bijin.txt')
-    line = f.readline()
+    finput = open('input/bijin.txt')
+    line = finput.readline()
 
     count = 1
     while line:
@@ -156,14 +181,14 @@ def main():
 
         #計測記事公開日時を文字列で取得
         pubdate = input[1]
-        # publish_hour = pubdate[11:12]
-        # print 'hour=',publish_hour
+
+        fout.write(path+',')
         
         #日付型に変換
         pubdate = datetime.datetime.strptime(pubdate, "%Y-%m-%d-%H")
 
-        #公開２時間
-        pv_2hour = get_results_pv_hour(pubdate)
+        #公開後時間ごとの計測
+        get_results_pv_hour(service, profile_id,path,pubdate,fout)
 
         #1日後
         #未来日付指定をしていない確認
@@ -190,10 +215,10 @@ def main():
         pv_week = get_results_pv(service, profile_id,'ga:pagePath=='+path,pubdate,pubdate_w)#公開後1週間のPV
         pv_month = get_results_pv(service, profile_id,'ga:pagePath=='+path,pubdate,pubdate_m)#公開後1月のPV
         
-        post_title = input[2]
-        #想定出力
-        #記事パス,1日PV、1週PV、1月PV、公開日、記事タイトル 
-        fout.write(path+',')
+        # post_title = input[2]
+        # #想定出力
+        # #記事パス,1日PV、1週PV、1月PV、公開日、記事タイトル 
+        # fout.write(path+',')
         fout.write(pv_day+',')
         fout.write(pv_week+',')
         fout.write(pv_month+',')
@@ -201,10 +226,9 @@ def main():
         fout.write(input[2])
         fout.write('\n')
 
-        break
-        line = f.readline()#次の行を読み込む
+        line = finput.readline()#次の行を読み込む
     #サイクルここまで <-
-    f.close()
+    finput.close()
     fout.close()
 
 if __name__ == '__main__':
