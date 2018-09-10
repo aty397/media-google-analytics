@@ -155,7 +155,7 @@ def main():
     fout.write('PV(8h)'+',')
     fout.write('PV(12h)'+',')
     fout.write('PV(16h)'+',')
-    fout.write('PV(1日)'+',')
+    fout.write('PV(1日:公開日+１日)'+',')
     fout.write('PV(７日)'+',')
     fout.write('PV(30日)'+',')
     fout.write('公開日'+',')
@@ -190,7 +190,7 @@ def main():
         #公開後時間ごとの計測
         get_results_pv_hour(service, profile_id,path,pubdate,fout)
 
-        #1日後
+        #1日後=公開日+１日
         #未来日付指定をしていない確認
         pubdate_d = pubdate + datetime.timedelta(days=1) 
         pubdate_d = pubdate_d.strftime("%Y-%m-%d") #文字列に戻す
