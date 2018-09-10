@@ -67,14 +67,14 @@ def get_results(service, profile_id):
             filters='ga:pagePath==/'
             ).execute()
 
-def get_results_pv(service, profile_id,post_path,pubdate,enddate):
+def get_results_pv(service, profile_id,input_filter,pubdate,enddate):
     # Use the Analytics Service Object to query the Core Reporting API
     # 確認
     # print '<--------------------------------------------------------'
     # print 'start_date=',pubdate
     # print 'end_date=',enddate
     # print 'path=',post_path
-    input_filter = 'ga:pagePath=='+post_path
+    # input_filter = 'ga:pagePath=='+post_path
     result = service.data().ga().get(
             ids='ga:' + profile_id,
             start_date=pubdate,
@@ -88,6 +88,8 @@ def get_results_pv(service, profile_id,post_path,pubdate,enddate):
 def get_results_pv_hour(pubdate):
     #時間ごとのPVを取得する
     #pubdate=日付型：%Y-%m-%d-%H
+    #filter example:ga:pagePath==/archives/18575;ga:dateHour==2018050812
+
     return 0
 
 def print_results(results):
@@ -184,9 +186,9 @@ def main():
         pubdate = pubdate.strftime("%Y-%m-%d") #pubdateを文字列に戻す  
         
         #PV取得
-        pv_day = get_results_pv(service, profile_id,path,pubdate,pubdate_d)#公開後1日のPV
-        pv_week = get_results_pv(service, profile_id,path,pubdate,pubdate_w)#公開後1週間のPV
-        pv_month = get_results_pv(service, profile_id,path,pubdate,pubdate_m)#公開後1月のPV
+        pv_day = get_results_pv(service, profile_id,'ga:pagePath=='+path,pubdate,pubdate_d)#公開後1日のPV
+        pv_week = get_results_pv(service, profile_id,'ga:pagePath=='+path,pubdate,pubdate_w)#公開後1週間のPV
+        pv_month = get_results_pv(service, profile_id,'ga:pagePath=='+path,pubdate,pubdate_m)#公開後1月のPV
         
         post_title = input[2]
         #想定出力
